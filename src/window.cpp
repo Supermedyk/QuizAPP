@@ -1,4 +1,4 @@
-#include "headers/window.hpp"
+#include "../headers/window.hpp"
 std::wstring Window::widen (const std::string& utf8_string)
 {
     std::wstring_convert <std::codecvt_utf8 <wchar_t>, wchar_t> convert;
