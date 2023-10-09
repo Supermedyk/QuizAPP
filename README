@@ -1,0 +1,1 @@
+Simple quiz app that reads questions from files and draws them on screen. Written with C++ using SFML library and STL.
