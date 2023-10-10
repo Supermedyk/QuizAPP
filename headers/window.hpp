@@ -32,12 +32,13 @@ private:
     void loadQuestions();
     void loadFiles();
     void shuffle_questions();
-    void drawCounter(const int &index);
-    void lastQuestion(const int &index, const int &amountOfGoodAnswers);
+    void drawCounter(const int &index, const int &amountOfGoodAnswers);
+    void drawIntro();
     void drawAnswers(const int &index);
     void drawResult(const int &amountOfGoodAnswers);
-    bool checkIfGoodAnswer(const int &index);
     void drawQuestion(const int &index);
+    void lastQuestion(const int &index);
+    bool checkIfGoodAnswer(const int &index);
     const std::string grade(const int &percentage);
     int convertWideStringToInteger(const std::wstring& value);
     std::wstring widen (const std::string& utf8_string);
