@@ -13,11 +13,11 @@ Window::Window()
     isFine = true;
     wantToChoose = 160000;
 }
-void Window::loadFileFromDisk(const std::string& filePath)
+void Window::loadFileFromDisk( const std::wstring &filePath)
 {
-    file.open(filePath);
+    file.open(std::filesystem::path(filePath));
     if (!file.good())
-        throw std::string("Cannot open ")+filePath;
+        throw widen("Cannot open ")+filePath;
 }
 void Window::closeFile()
 {
@@ -38,20 +38,32 @@ int Window::convertWideStringToInteger(const std::wstring& value)
     }
     return result;
 }
-void Window::loadAmountOfQuestions()
+void Window::loadInfoFile()
 {
-    loadFileFromDisk("Config\\info.txt");
+    loadFileFromDisk(widen("Config\\info.txt"));
     getline(file,myString);
-    closeFile();
     amountOfQuestions = convertWideStringToInteger(widen(myString).substr(6,myString.length()));
     if (amountOfQuestions <= 0 || amountOfQuestions > 1000)
     {
-        throw std::string("Wrong amount of questions");
+        closeFile();
+        throw widen("Wrong amount of questions!");
     }
+    getline(file,myString);
+    dataFile = widen(myString);
+    dataFile = dataFile.substr(14);
+    while(dataFile.length() != 0 && *dataFile.begin() == L' ')
+    {
+        dataFile.erase(dataFile.begin());
+    }
+
+    dataFile += L".txt";
+    closeFile();
+    if (dataFile.length() == 0)
+        throw widen("Data file doesn't exists!");
 }
 void Window::loadQuestions()
 {
-    loadFileFromDisk("Config\\data.txt");
+    loadFileFromDisk(widen("Config\\") + dataFile);
     std::vector<std::wstring> valueBuff;
     std::wstring helpVariable;
     std::vector<Answer> answersBuff;
@@ -66,7 +78,7 @@ void Window::loadQuestions()
             if  ((myString.length() == 0)|| (myString.length() == 1 && myString[0] != 'x' && myString[0] != 'X'   ))
             {
                 closeFile();
-                throw std::string("Question uncorrectly defined!");
+                throw widen("Question uncorrectly defined!");
             }
 
             if (!(myString.length() == 1 && (myString[0] == 'x' || myString[0] == 'X')))
@@ -82,12 +94,12 @@ void Window::loadQuestions()
             if (myString.length() <= 1)
             {
                 closeFile();
-                throw std::string("Answer too short!");
+                throw widen("Answer too short!");
             }
             if (myString[0] != '+' && myString[0] != '-')
             {
                 closeFile();
-                throw std::string("Can't decide if answer is positive or not!");
+                throw widen("Can't decide if answer is positive or not!");
             }
             if (myString[0] == '+')
                 positiveBuff = true;
@@ -102,10 +114,10 @@ void Window::loadFiles()
 {
     try
     {
-        loadAmountOfQuestions();
+        loadInfoFile();
         loadQuestions();
     }
-    catch (const std::string &error)
+    catch (const std::wstring &error)
     {
         isFine = false;
         _text.setString(error);
@@ -128,7 +140,7 @@ void Window::drawCounter(const int &index)
     _text.setPosition({1200,670});
     _window.draw(_text);
 }
-void Window::lastQuestion(const int& index)
+void Window::lastQuestion(const int& index, const int &amountOfGoodAnswers)
 {
     if (checkIfGoodAnswer(index))
     {
@@ -140,11 +152,31 @@ void Window::lastQuestion(const int& index)
         _text.setFillColor(sf::Color::Red);
         _text.setString(L"Zła odpowiedź!");
     }
-    _text.setCharacterSize(60);
+
+
+    _text.setCharacterSize(120);
     sf::FloatRect buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _text.setPosition({640,360});
     _window.draw(_text);
+
+
+
+    _text.setString(widen("Dobrych: " + std::to_string(amountOfGoodAnswers)));
+    buff = _text.getLocalBounds();
+    _text.setOrigin(0,0);
+    _text.setCharacterSize(75);
+    _text.setFillColor(sf::Color::Green);
+    _text.setPosition(0,0);
+    _window.draw(_text);
+
+    _text.setString(widen("Złych: " + std::to_string((index+1)-amountOfGoodAnswers)));
+    _text.setOrigin(0,0);
+    _text.setCharacterSize(75);
+    _text.setFillColor(sf::Color::Red);
+    _text.setPosition(0,75);
+    _window.draw(_text);
+
     _text.setFillColor(sf::Color::White);
 }
 bool Window::checkIfGoodAnswer(const int &index)
@@ -185,8 +217,24 @@ void Window::drawAnswers(const int &index)
         yRect += 120;
     }
 }
+const std::string Window::grade(const int &percentage)
+{
+    switch(percentage)
+    {
+    case 35 ... 49:
+        return "2";
+    case 50 ... 69:
+        return "3";
+    case 70 ... 89:
+        return "4";
+    case 90 ... 100:
+        return "5";
+    }
+    return "1";
+}
 void Window::drawResult(const int &amountOfGoodAnswers)
 {
+    int percentage = round((static_cast<double>(amountOfGoodAnswers)/static_cast<double>(amountOfQuestions))*100.0);
     _text.setCharacterSize(40);
     _text.setPosition(640,100);
     _text.setString(widen("Ilość pytań: " + std::to_string(amountOfQuestions)));
@@ -194,18 +242,23 @@ void Window::drawResult(const int &amountOfGoodAnswers)
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
     _text.setPosition(640,200);
-    _text.setString(widen("Ilość dobrych odpowiedzi: " + std::to_string(amountOfGoodAnswers)));
+    _text.setString(widen("Ilość dobrych odpowiedzi: " + std::to_string(amountOfGoodAnswers) + " (" + std::to_string(percentage) + "%)" ));
     buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
-     _text.setPosition(640,300);
-    _text.setString(L"Ilość złych odpowiedzi: " + widen(std::to_string(amountOfQuestions-amountOfGoodAnswers)));
+    _text.setPosition(640,300);
+    _text.setString(L"Ilość złych odpowiedzi: " + widen(std::to_string(amountOfQuestions-amountOfGoodAnswers)+ " (" + std::to_string(100-percentage) + "%)"   ));
     buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
     _text.setCharacterSize(100);
     _text.setPosition(640,400);
-    _text.setString(widen("Wynik w procentach: " + std::to_string( (int)round((static_cast<double>(amountOfGoodAnswers)/static_cast<double>(amountOfQuestions))*100.0)  )  + "%" ));
+    _text.setString(widen("Wynik w procentach: " + std::to_string( percentage)  + "%" ));
+    buff = _text.getLocalBounds();
+    _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
+    _window.draw(_text);
+    _text.setPosition(640,550);
+    _text.setString(widen("Proponowana ocena: " + grade(percentage)));
     buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
@@ -242,6 +295,7 @@ void Window::mainLoop()
     bool downClickArrow = false;
     bool enterClick = false;
     bool showAnswer = false;
+    bool spaceClick = false;
     while(_window.isOpen())
     {
         sf::Event event;
@@ -249,67 +303,81 @@ void Window::mainLoop()
         {
             if (event.type == sf::Event::Closed)
                 _window.close();
-            if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) && enterClick == false && (currentIndex != amountOfQuestions || showAnswer))
+            if (isFine)
+            {
+                if ((((sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) && enterClick == false) || ((sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) && spaceClick == false))&& (currentIndex != amountOfQuestions || showAnswer) )
             {
                 if (showAnswer)
-                {
-                    showAnswer = false;
-                    wantToChoose = 0;
-                    currentIndex++;
+                    {
+                        showAnswer = false;
+                        wantToChoose = 0;
+                        currentIndex++;
+                    }
+                    else
+                    {
+                        if (checkIfGoodAnswer(currentIndex))
+                            amountOfGoodAnswers++;
+                        showAnswer = true;
+                    }
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+                    {
+                        enterClick = true;
+                    }
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+                    {
+                        spaceClick = true;
+                    }
                 }
-                else
-                {
-                    if (checkIfGoodAnswer(currentIndex))
-                        amountOfGoodAnswers++;
-                    showAnswer = true;
-                }
-                enterClick = true;
-            }
-            if (!showAnswer)
+                if (!showAnswer)
             {
                 if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W)) && upClickW == false)
-                {
-                    wantToChoose--;
-                    upClickW = true;
+                    {
+                        wantToChoose--;
+                        upClickW = true;
+                    }
+                    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && upClickArrow == false)
+                    {
+                        wantToChoose--;
+                        upClickArrow = true;
+                    }
+                    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::S)) && downClickS == false)
+                    {
+                        wantToChoose++;
+                        downClickS = true;
+                    }
+                    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) && downClickArrow == false)
+                    {
+                        wantToChoose++;
+                        downClickArrow = true;
+                    }
                 }
-                if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && upClickArrow == false)
-                {
-                    wantToChoose--;
-                    upClickArrow = true;
-                }
-                if ((sf::Keyboard::isKeyPressed(sf::Keyboard::S)) && downClickS == false)
-                {
-                    wantToChoose++;
-                    downClickS = true;
-                }
-                if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) && downClickArrow == false)
-                {
-                    wantToChoose++;
-                    downClickArrow = true;
-                }
-            }
-            if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::S)) && downClickS == true)
+                if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::S)) && downClickS == true)
                 downClickS = false;
-            if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::W)) && upClickW == true)
-                upClickW = false;
-            if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) && downClickArrow == true)
-                downClickArrow = false;
-            if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && upClickArrow == true)
-                upClickArrow = false;
-            if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) && enterClick == true)
-                enterClick = false;
-            if (wantToChoose < 0)
-                wantToChoose = 4;
-            if (wantToChoose >= 5)
-                wantToChoose = 0;
+                             if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::W)) && upClickW == true)
+                                 upClickW = false;
+                                 if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) && downClickArrow == true)
+                                     downClickArrow = false;
+                                     if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && upClickArrow == true)
+                                         upClickArrow = false;
+                                         if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) && enterClick == true)
+                                             enterClick = false;
+                                             if ((!sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) && spaceClick == true)
+                                                 spaceClick = false;
 
-        }
-        _window.clear(sf::Color(30,30,30));
+                                                 if (wantToChoose < 0)
+                                                     wantToChoose = 4;
+                                                     if (wantToChoose >= 5)
+                                                         wantToChoose = 0;
+
+                                        }
+
+    }
+    _window.clear(sf::Color(30,30,30));
         if (isFine)
         {
             if (showAnswer)
             {
-                lastQuestion(currentIndex);
+                lastQuestion(currentIndex,amountOfGoodAnswers);
             }
             else if (currentIndex != amountOfQuestions)
             {
