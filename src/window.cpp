@@ -135,16 +135,16 @@ void Window::drawIntro()
 {
     if (dataFile.length() == 0)
         throw widen("Wrong question name!");
-    _text.setString(dataFile);
+    _text.setString(dataFile.substr(0,dataFile.length()-4));
     _text.setCharacterSize(140);
     _text.setPosition({640,90});
-     sf::FloatRect buff = _text.getLocalBounds();
+    sf::FloatRect buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
     _text.setString(widen("Kliknij spację by kontynuować!"));
     _text.setCharacterSize(70);
     _text.setPosition({640,700});
-      buff = _text.getLocalBounds();
+    buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
 };
@@ -392,7 +392,15 @@ void Window::mainLoop()
         {
             if (showIntro)
             {
-                drawIntro();
+                try
+                {
+                    drawIntro();
+                }
+                catch(const std::wstring &error)
+                {
+                     isFine = false;
+                    _text.setString(error);
+                }
             }
             else if (showAnswer)
             {
@@ -406,7 +414,7 @@ void Window::mainLoop()
                     drawAnswers(currentIndex);
                     drawCounter(currentIndex,amountOfGoodAnswers);
                 }
-                catch(const char* error)
+                catch(const std::wstring &error)
                 {
                     isFine = false;
                     _text.setString(error);
