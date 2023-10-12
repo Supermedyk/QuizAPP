@@ -137,9 +137,9 @@ void Window::drawIntro()
         throw widen("Wrong question name!");
     _text.setString(dataFile.substr(0,dataFile.length()-4));
     _text.setCharacterSize(140);
-    _text.setPosition({640,90});
     sf::FloatRect buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
+    _text.setPosition(640,350);
     _window.draw(_text);
     _text.setString(widen("Kliknij spację by kontynuować!"));
     _text.setCharacterSize(70);
@@ -227,51 +227,53 @@ void Window::drawAnswers(const int &index)
         yRect += 120;
     }
 }
-const std::string Window::grade(const int &percentage)
+const std::pair<sf::Color,std::string> Window::grade(const int &percentage)
 {
     switch(percentage)
     {
     case 35 ... 49:
-        return "2";
+        return {sf::Color(255,165,0),"2"};
     case 50 ... 69:
-        return "3";
+        return {sf::Color::Yellow,"3"};
     case 70 ... 89:
-        return "4";
+        return {sf::Color(	144, 238, 144),"4"};
     case 90 ... 100:
-        return "5";
+        return {sf::Color::Green,"5"};
     }
-    return "1";
+    return {sf::Color::Red,"1"};
 }
 void Window::drawResult(const int &amountOfGoodAnswers)
 {
+    sfe::RichText text(_font);
     int percentage = round((static_cast<double>(amountOfGoodAnswers)/static_cast<double>(amountOfQuestions))*100.0);
-    _text.setCharacterSize(50);
-    _text.setPosition(640,100);
-    _text.setString(L"Ilość pytań: " + widen(std::to_string(amountOfQuestions)));
-    sf::FloatRect buff = _text.getLocalBounds();
-    _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _window.draw(_text);
-    _text.setPosition(640,200);
-    _text.setString(L"Ilość dobrych odpowiedzi: " + widen(std::to_string(amountOfGoodAnswers)) + widen(" (" + std::to_string(percentage) + "%)") );
-    buff = _text.getLocalBounds();
-    _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _window.draw(_text);
-    _text.setPosition(640,300);
-    _text.setString(L"Ilość złych odpowiedzi: " + widen(std::to_string(amountOfQuestions-amountOfGoodAnswers)+ " (" + std::to_string(100-percentage) + "%)"   ));
-    buff = _text.getLocalBounds();
-    _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _window.draw(_text);
-    _text.setCharacterSize(100);
-    _text.setPosition(640,400);
-    _text.setString(widen("Wynik w procentach: " + std::to_string( percentage)  + "%" ));
-    buff = _text.getLocalBounds();
-    _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _window.draw(_text);
-    _text.setPosition(640,550);
-    _text.setString(widen("Proponowana ocena: " + grade(percentage)));
-    buff = _text.getLocalBounds();
-    _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _window.draw(_text);
+    text.setCharacterSize(50);
+    text.setPosition(640,100);
+    //text.setString(L"Ilość pytań: " + widen(std::to_string(amountOfQuestions)));
+    text << sf::Color::White << L"Ilość pytań: " + widen(std::to_string(amountOfQuestions));
+    sf::FloatRect buff = text.getLocalBounds();
+    text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
+    _window.draw(text);
+    text.setPosition(640,200);
+   // text.setString(L"Ilość dobrych odpowiedzi: " + widen(std::to_string(amountOfGoodAnswers)) + widen(" (" + std::to_string(percentage) + "%)") );
+    text.clear();
+    text << sf::Color::White<<L"Ilość dobrych odpowiedzi: " << sf::Color::Green <<  widen(std::to_string(amountOfGoodAnswers)) << sf::Color::White << " (" + std::to_string(percentage) + "%)";
+    buff = text.getLocalBounds();
+    text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
+    _window.draw(text);
+    text.setPosition(640,300);
+    text.clear();
+//    text.setString(L"Ilość złych odpowiedzi: " + widen(std::to_string(amountOfQuestions-amountOfGoodAnswers)+ " (" + std::to_string(100-percentage) + "%)"   ));
+     text << sf::Color::White<<L"Ilość złych odpowiedzi: " << sf::Color::Red <<  widen(std::to_string(amountOfQuestions-amountOfGoodAnswers)) << sf::Color::White << " (" + std::to_string(100-percentage) + "%)";
+    buff = text.getLocalBounds();
+    text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
+    _window.draw(text);
+    text.clear();
+    text.setCharacterSize(100);
+    text.setPosition(640,550);
+    text << sf::Color::White << "Proponowana ocena: " << (grade(percentage)).first <<(grade(percentage)).second;
+    buff = text.getLocalBounds();
+    text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
+    _window.draw(text);
 }
 void Window::drawQuestion(const int &index)
 {

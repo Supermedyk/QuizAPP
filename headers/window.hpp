@@ -11,6 +11,7 @@
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 #include <filesystem>
+#include "RichText.hpp"
 class Window
 {
 private:
@@ -39,7 +40,7 @@ private:
     void drawQuestion(const int &index);
     void lastQuestion(const int &index);
     bool checkIfGoodAnswer(const int &index);
-    const std::string grade(const int &percentage);
+    const std::pair<sf::Color,std::string> grade(const int &percentage);
     int convertWideStringToInteger(const std::wstring& value);
     std::wstring widen (const std::string& utf8_string);
 
