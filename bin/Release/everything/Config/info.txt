@@ -1,0 +1,2 @@
+Ilość: 3
+Plik z danymi:test
