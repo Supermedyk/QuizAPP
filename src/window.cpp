@@ -148,7 +148,7 @@ void Window::drawIntro()
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
     _window.draw(_text);
 };
-void Window::drawCounter(const int &index, const int &amountOfGoodAnswers)
+void Window::drawCounter(const int &index, const int &amountOfGoodAnswers, const int &amountOfBadAnswers)
 {
     _text.setString(std::to_string(index+1)+"/"+std::to_string(amountOfQuestions));
     _text.setCharacterSize(60);
@@ -163,7 +163,7 @@ void Window::drawCounter(const int &index, const int &amountOfGoodAnswers)
     _text.setPosition({0,710});
     _window.draw(_text);
     _text.setFillColor(sf::Color::Red);
-    _text.setString(widen("Złe: ")+widen(std::to_string(index-amountOfGoodAnswers)));
+    _text.setString(widen("Złe: ")+widen(std::to_string(amountOfBadAnswers)));
     _text.setCharacterSize(30);
     _text.setOrigin({0,0});
     _text.setPosition({0,750});
@@ -300,6 +300,7 @@ void Window::mainLoop()
     shuffle_questions();
     int currentIndex = 0;
     int amountOfGoodAnswers = 0;
+    int amountOfBadAnswers = 0;
     wantToChoose = 0;
     bool upClickW = false;
     bool downClickS = false;
@@ -327,13 +328,15 @@ void Window::mainLoop()
                     else if (showAnswer)
                     {
                         showAnswer = false;
-                        wantToChoose = 0;
                         currentIndex++;
+                        wantToChoose = 0;
                     }
                     else
                     {
                         if (checkIfGoodAnswer(currentIndex))
                             amountOfGoodAnswers++;
+                        else
+                            amountOfBadAnswers++;
                         showAnswer = true;
                     }
                     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
@@ -408,8 +411,8 @@ void Window::mainLoop()
             {
                 drawQuestion(currentIndex);
                 drawAnswers(currentIndex);
-                drawCounter(currentIndex,amountOfGoodAnswers);
                 lastQuestion(currentIndex);
+                drawCounter(currentIndex,amountOfGoodAnswers,amountOfBadAnswers);
             }
             else if (currentIndex != amountOfQuestions)
             {
@@ -417,7 +420,7 @@ void Window::mainLoop()
                 {
                     drawQuestion(currentIndex);
                     drawAnswers(currentIndex);
-                    drawCounter(currentIndex,amountOfGoodAnswers);
+                    drawCounter(currentIndex,amountOfGoodAnswers,amountOfBadAnswers);
                 }
                 catch(const std::wstring &error)
                 {

@@ -33,7 +33,7 @@ private:
     void loadQuestions();
     void loadFiles();
     void shuffle_questions();
-    void drawCounter(const int &index, const int &amountOfGoodAnswers);
+    void drawCounter(const int &index, const int &amountOfGoodAnswers, const int &amountOfBadAnswers);
     void drawIntro();
     void drawAnswers(const int &index);
     void drawResult(const int &amountOfGoodAnswers);
