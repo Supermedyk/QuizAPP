@@ -174,18 +174,18 @@ void Window::lastQuestion(const int& index)
 {
     if (checkIfGoodAnswer(index))
     {
-        _text.setFillColor(sf::Color::Green);
+        _text.setFillColor(sf::Color(0x1,0x32,0x20));
         _text.setString(L"Dobra odpowiedź!");
     }
     else
     {
-        _text.setFillColor(sf::Color::Red);
+        _text.setFillColor(sf::Color(0x8b,0x00,0x00));
         _text.setString(L"Zła odpowiedź!");
     }
-    _text.setCharacterSize(120);
+    _text.setCharacterSize(42);
     sf::FloatRect buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _text.setPosition({640,360});
+    _text.setPosition({1100,wantToChoose*120+120+44});
     _window.draw(_text);
     _text.setFillColor(sf::Color::White);
 }
@@ -406,6 +406,9 @@ void Window::mainLoop()
             }
             else if (showAnswer)
             {
+                drawQuestion(currentIndex);
+                drawAnswers(currentIndex);
+                drawCounter(currentIndex,amountOfGoodAnswers);
                 lastQuestion(currentIndex);
             }
             else if (currentIndex != amountOfQuestions)
