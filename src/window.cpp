@@ -174,7 +174,7 @@ void Window::lastQuestion(const int& index)
 {
     if (checkIfGoodAnswer(index))
     {
-        _text.setFillColor(sf::Color(0x1,0x32,0x20));
+        _text.setFillColor(sf::Color(0x23,0x73,0x12));
         _text.setString(L"Dobra odpowiedź!");
     }
     else
@@ -182,10 +182,10 @@ void Window::lastQuestion(const int& index)
         _text.setFillColor(sf::Color(0x8b,0x00,0x00));
         _text.setString(L"Zła odpowiedź!");
     }
-    _text.setCharacterSize(42);
+    _text.setCharacterSize(46);
     sf::FloatRect buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _text.setPosition({1100,wantToChoose*120+120+44});
+    _text.setPosition({1090,wantToChoose*120+120+44});
     _window.draw(_text);
     _text.setFillColor(sf::Color::White);
 }
