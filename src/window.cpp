@@ -185,8 +185,10 @@ void Window::lastQuestion(const int& index)
     _text.setCharacterSize(46);
     sf::FloatRect buff = _text.getLocalBounds();
     _text.setOrigin(buff.left+buff.width/2.0f,buff.top+buff.height/2.0f);
-    _text.setPosition({1090,wantToChoose*120+120+44});
+    _text.setPosition({1050,wantToChoose*120+120+44});
+    _text.setStyle(1);
     _window.draw(_text);
+    _text.setStyle(0);
     _text.setFillColor(sf::Color::White);
 }
 bool Window::checkIfGoodAnswer(const int &index)
